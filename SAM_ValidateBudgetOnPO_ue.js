@@ -11,7 +11,7 @@
  **********************************************************/
 define(['N/record', 'N/error', 'N/search', 'N/runtime'],
 
-function(record, error, search, runtime) {
+function(record, error, search, runtime) { 
 
 	function afterSubmit(context) {
       	if (context.type === context.UserEventType.DELETE) {
