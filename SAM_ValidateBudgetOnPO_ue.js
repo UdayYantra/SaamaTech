@@ -2,7 +2,7 @@
  * @NApiVersion 2.x
  * @NScriptType UserEventScript
  * @NModuleScope SameAccount
- * File Name: SAM_ValidateBudgetOnPO_ue.js.js
+ * File Name: SAM_ValidateBudgetOnPO_ue.js
  * Script Name: SAM_ValidateBudgetOnPOPR_UE	
  * Company: Saama Tech. 
  * Date	Created:	09-July-2019.
@@ -47,7 +47,7 @@ function(record, error, search, runtime) {
 		log.debug("location : ", location);
 
 		var _total = recordObj.getValue({
-		  fieldId: 'totalaftertaxes'
+		  fieldId: 'totalamount'
 		});
 		log.debug("total : ", _total);
 		
@@ -632,7 +632,7 @@ function(record, error, search, runtime) {
 		}));
 		
 		columnTransaction.push(search.createColumn({
-			name: "totalaftertaxes",
+			name: "totalamount",
 			label: "Total Amount"
 		}));
 		
