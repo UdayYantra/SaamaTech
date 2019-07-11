@@ -58,7 +58,7 @@
                     budgetNotDefined++;
                 }
 
-            }//for(var i=0;i<itemLineCount;i++)
+            }//for(var i=0;i<itemLineCount;i++) 
 
             if(outOfBudget) {
                 recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 2});
