@@ -642,269 +642,236 @@ function(record, error, search, runtime) {
 			columns: columnTransaction
 		});
 		
+		
 		var searchResultCount = transactionimportSearchObj.runPaged().count;
 		log.debug("searchResultCount result count", searchResultCount);
 
-		var transactionResult = transactionimportSearchObj.run().getRange({
-		  start: 0,
-		  end: searchResultCount
-		});
-		
-		if(transactionResult) {
-			var poArray = new Array();
-			for(var a = 0; a < transactionResult.length; a++) {
-				
-				
-				var type = transactionResult[a].getValue({
-				  name: 'type'
-				});
-				amountToBeAdded = Number(0);
-				//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
-				
-				var totalAmount = transactionResult[a].getValue({
-					name: 'amount'
-				});
-				log.debug("totalAmount", totalAmount);
+		var ed = 0;
 
-				var purchOrdId = transactionResult[a].getValue({
-					name: 'internalid'
-				});
-				if(poArray.indexOf(purchOrdId) != -1) {
-					continue;
-				}
-				poArray.push(purchOrdId);
-				log.debug("purchOrdId", purchOrdId);
-				var purOrdRecord = record.load({
-					  type: "purchaseorder",
-					  id: purchOrdId,
-					  isDynamic: true,
-				});
-				var lineItemCount = purOrdRecord.getLineCount({
-					  sublistId: 'item'
-				});
-				var isCurrentPO = false;
-				if(recordId == purchOrdId) {
-					log.debug("calculating for current po " , recordId);
-					isCurrentPO = true;
-				}
-				var amountTotalAdded = Number(0);
-				var account = assetacc ? assetacc : expenseaccount;
-				for (var i = 0; i < lineItemCount; i++) {
-					var purchOrditemId = purOrdRecord.getSublistValue({
-						sublistId: "item",
-						fieldId: "item",
-						line: i
-					});
-					log.debug('Item Id:-', purchOrditemId);
-					var lineassetacc = purOrdRecord.getSublistValue({
-						sublistId: "item",
-						fieldId: "custcol_sam_assetacc",
-						line: i
-					});
+		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
+
+		for(var st=ed;st<searchResultCount;st++) {
+			ed = st+999;
+			if(searchResultCount < ed) {
+				ed = Number(searchResultCount);
+			}
+
+			var billSearchResultSet = '';
+			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
+
+			var _utilizedBudgetAmount = Number(0);
+			var amountToBeAdded = Number(0);
+
+			if(transactionResult) {
+				var poArray = new Array();
+				for(var a = 0; a < transactionResult.length; a++) {
 					
-					var lineexpenseaccount = purOrdRecord.getSublistValue({
-						sublistId: "item",
-						fieldId: "custcol_sam_expenseaccount",
-						line: i
+					
+					var type = transactionResult[a].getValue({
+					name: 'type'
 					});
-					var currentLineAccount = lineassetacc ? lineassetacc : lineexpenseaccount;
-					if(purchOrditemId == itemId) {
-						var amount = purOrdRecord.getSublistValue({
+					amountToBeAdded = Number(0);
+					//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
+					
+					var totalAmount = transactionResult[a].getValue({
+						name: 'amount'
+					});
+					log.debug("totalAmount", totalAmount);
+
+					var purchOrdId = transactionResult[a].getValue({
+						name: 'internalid'
+					});
+					if(poArray.indexOf(purchOrdId) != -1) {
+						continue;
+					}
+					poArray.push(purchOrdId);
+					log.debug("purchOrdId", purchOrdId);
+					var purOrdRecord = record.load({
+						type: "purchaseorder",
+						id: purchOrdId,
+						isDynamic: true,
+					});
+					var lineItemCount = purOrdRecord.getLineCount({
+						sublistId: 'item'
+					});
+					var isCurrentPO = false;
+					if(recordId == purchOrdId) {
+						log.debug("calculating for current po " , recordId);
+						isCurrentPO = true;
+					}
+					var amountTotalAdded = Number(0);
+					var account = assetacc ? assetacc : expenseaccount;
+					for (var i = 0; i < lineItemCount; i++) {
+						var purchOrditemId = purOrdRecord.getSublistValue({
 							sublistId: "item",
-							fieldId: "amount",
+							fieldId: "item",
 							line: i
 						});
-						log.debug('amount:-', amount);
-						if(isCurrentPO) {
-							log.debug('current po');
-							if(z <= i) {
-								log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
-							}
-						} else {
-							amountTotalAdded = amount;
-						}
-						amountToBeAdded += Number(amountTotalAdded);
-					} else if (currentLineAccount == account) {
-						var amount = purOrdRecord.getSublistValue({
+						log.debug('Item Id:-', purchOrditemId);
+						var lineassetacc = purOrdRecord.getSublistValue({
 							sublistId: "item",
-							fieldId: "amount",
+							fieldId: "custcol_sam_assetacc",
 							line: i
 						});
-						log.debug('amount:-', amount);
-						if(isCurrentPO) {
-							log.debug('current po');
-							if(z <= i) {
-								log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
+						
+						var lineexpenseaccount = purOrdRecord.getSublistValue({
+							sublistId: "item",
+							fieldId: "custcol_sam_expenseaccount",
+							line: i
+						});
+						var currentLineAccount = lineassetacc ? lineassetacc : lineexpenseaccount;
+						if(purchOrditemId == itemId) {
+							var amount = purOrdRecord.getSublistValue({
+								sublistId: "item",
+								fieldId: "amount",
+								line: i
+							});
+							log.debug('amount:-', amount);
+							if(isCurrentPO) {
+								log.debug('current po');
+								if(z <= i) {
+									log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
+								}
+							} else {
+								amountTotalAdded = amount;
 							}
-						} else {
-							amountTotalAdded = amount;
+							amountToBeAdded += Number(amountTotalAdded);
+						} else if (currentLineAccount == account) {
+							var amount = purOrdRecord.getSublistValue({
+								sublistId: "item",
+								fieldId: "amount",
+								line: i
+							});
+							log.debug('amount:-', amount);
+							if(isCurrentPO) {
+								log.debug('current po');
+								if(z <= i) {
+									log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
+								}
+							} else {
+								amountTotalAdded = amount;
+							}
+							amountToBeAdded += Number(amountTotalAdded);
 						}
-						amountToBeAdded += Number(amountTotalAdded);
+						
 					}
 					
+					_utilizedBudgetAmount = Number(_utilizedBudgetAmount) + Number(amountToBeAdded);
+					log.debug("fetchAllPODetails _utilizedBudgetAmount", _utilizedBudgetAmount);
 				}
 				
-				_utilizedBudgetAmount = Number(_utilizedBudgetAmount) + Number(amountToBeAdded);
-				log.debug("fetchAllPODetails _utilizedBudgetAmount", _utilizedBudgetAmount);
+				st = Number(ed);
 			}
+		
 		}
 		return _utilizedBudgetAmount;
+
 	}
 	function fetchAllPRDetails(itemId, subsidiary , department, getclass, recordId, z, assetacc, expenseaccount) {
 	
 		var filterTransaction = new Array();
-		filterTransaction.push(search.createFilter({
-			name : 'subsidiary',
-			operator : search.Operator.ANYOF,
-			values : subsidiary
-		}));
+		filterTransaction.push(search.createFilter({ name : 'subsidiary', operator : search.Operator.ANYOF, values : subsidiary }));
 		if(department) {
-			filterTransaction.push(search.createFilter({
-				name : 'department',
-			    operator : search.Operator.IS,
-			    values : department
-			})); 
+			filterTransaction.push(search.createFilter({ name : 'department', operator : search.Operator.IS, values : department })); 
 		}
 		if(getclass) {
-			filterTransaction.push(search.createFilter({
-				name : 'class',
-				operator : search.Operator.IS,
-				values : getclass
-			}));
+			filterTransaction.push(search.createFilter({ name : 'class', operator : search.Operator.IS, values : getclass }));
         }
 		if(assetacc) {
-			filterTransaction.push(search.createFilter({
-				name : 'custcol_sam_assetacc',
-				operator : search.Operator.ANYOF,
-				values : assetacc
-			}));
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_assetacc', operator : search.Operator.ANYOF, values : assetacc }));
 		}
 		log.debug('expenseaccount','expenseaccount' + expenseaccount);
 		if(expenseaccount) {
-			filterTransaction.push(search.createFilter({
-				name : 'custcol_sam_expenseaccount',
-				operator : search.Operator.ANYOF,
-				values : expenseaccount
-			}));
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
 		}
-		filterTransaction.push(search.createFilter({
-		  name : 'type',
-		  operator : search.Operator.ANYOF,
-		  values : "PurchReq"
-		}));
-		filterTransaction.push(search.createFilter({
-			name : 'mainline',
-			operator : search.Operator.IS,
-			values : 'F'
-		}));
-		filterTransaction.push(search.createFilter({
-			name : 'item',
-			operator : search.Operator.ANYOF,
-			values : itemId
-		}));
-		filterTransaction.push(search.createFilter({
-			name : 'approvalstatus',
-			operator : search.Operator.NONEOF,
-			values : '3'
-		}));
+		filterTransaction.push(search.createFilter({ name : 'type', operator : search.Operator.ANYOF, values : "PurchReq" }));
+		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
+		filterTransaction.push(search.createFilter({ name : 'item', operator : search.Operator.ANYOF, values : itemId }));
+		filterTransaction.push(search.createFilter({ name : 'approvalstatus', operator : search.Operator.NONEOF, values : '3' }));
 		
 		var columnTransaction = new Array();
 
-		columnTransaction.push(search.createColumn({
-		  name: "type",
-		  label: "Type"
-		}));
+		columnTransaction.push(search.createColumn({ name: "type", label: "Type" }));
+		columnTransaction.push(search.createColumn({ name: "estimatedtotal", label: "Estimated Amount" }));
+		columnTransaction.push(search.createColumn({ name: "total", label: "Total Amount" }));
+		columnTransaction.push(search.createColumn({ name: "internalid", label: "Id" }));
 		
-		columnTransaction.push(search.createColumn({
-			name: "estimatedtotal",
-			label: "Estimated Amount"
-		}));
-		
-		columnTransaction.push(search.createColumn({
-			name: "total",
-			label: "Total Amount"
-		}));
-		
-		columnTransaction.push(search.createColumn({
-			name: "internalid",
-			label: "Id"
-		}));
-		
-		var transactionimportSearchObj = search.create({
-		  type: "transaction",
-		  filters: filterTransaction,
-		  columns: columnTransaction
-		});
+		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
 
 		var searchResultCount = transactionimportSearchObj.runPaged().count;
 		log.debug("searchResultCount result count", searchResultCount);
 
-		var transactionResult = transactionimportSearchObj.run().getRange({
-		  start: 0,
-		  end: searchResultCount
-		});
-		
-		var _utilizedBudgetAmount = Number(0);
-		var amountToBeAdded = Number(0);
-		
-		if(transactionResult) {
-			for(var a = 0; a < transactionResult.length; a++) {
-				var type = transactionResult[a].getValue({
-				  name: 'type'
-				});
-				
-				var prid = transactionResult[a].getValue({
-				  name: 'internalid'
-				});
-				var isCurrentPO = false;
-				if(recordId == prid) {
-					log.debug("calculating for current po " , recordId);
-					isCurrentPO = true;
-				}
-				
-				var linkCount = 0;
-				if(prid) {
-					var pr = record.load({
-					  type: "purchaserequisition",
-					  id: prid,
-					  isDynamic: true,
-				  });
-					linkCount = pr.getLineCount({
-						sublistId: 'links'
-					});
-					log.debug("linkCount:- ", linkCount);
-				}
-				amountToBeAdded = Number(0);
-				var estimatedTotalAmount = transactionResult[a].getValue({
-					name: 'estimatedtotal'
-				  });
-				  
-				log.debug("estimatedTotalAmount", estimatedTotalAmount);
-				var split = estimatedTotalAmount;
-				
-				if(estimatedTotalAmount.indexOf("-") >= 0) {
-					split = estimatedTotalAmount.split("-");
-					estimatedTotalAmount = split[1];
-				}
-				
-				log.debug("estimatedTotalAmount", estimatedTotalAmount);
-				if(linkCount == 0) {
-					log.debug("inside if ", "count 0");
-					if(isCurrentPO) {
-						log.debug('current po');
-						if(z <= i) {
-							log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
-						}
-					} else {
-						amountToBeAdded = Number(estimatedTotalAmount);
-					}
-				} else {
-					log.debug("inside else ", "linkCount " + linkCount);
-				}
-				_utilizedBudgetAmount = Number(_utilizedBudgetAmount) + Number(amountToBeAdded);
-				log.debug("fetchAllPRDetails _utilizedBudgetAmount", _utilizedBudgetAmount);
+		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
+
+		var ed = 0;
+
+		for(var st=ed;st<searchResultCount;st++) {
+			ed = st+999;
+			if(searchResultCount < ed) {
+				ed = Number(searchResultCount);
 			}
+			//log.debug({title: "St & Ed", details: st +" & "+ ed});
+			var billSearchResultSet = '';
+			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
+
+			var _utilizedBudgetAmount = Number(0);
+			var amountToBeAdded = Number(0);
+			
+			if(transactionResult) {
+
+				for(var a = 0; a < transactionResult.length; a++) {
+					
+					var type = transactionResult[a].getValue({ name: 'type' });
+					var prid = transactionResult[a].getValue({ name: 'internalid' });
+					var isCurrentPO = false;
+					
+					if(recordId == prid) {
+						log.debug("calculating for current po " , recordId);
+						isCurrentPO = true;
+					}
+					
+					var linkCount = 0;
+					if(prid) {
+						var pr = record.load({ type: "purchaserequisition", id: prid, isDynamic: true });
+						linkCount = pr.getLineCount({ sublistId: 'links' });
+						log.debug("linkCount:- ", linkCount);
+					}
+					amountToBeAdded = Number(0);
+					var estimatedTotalAmount = transactionResult[a].getValue({ name: 'estimatedtotal' });
+					
+					log.debug("estimatedTotalAmount", estimatedTotalAmount);
+					var split = estimatedTotalAmount;
+					
+					if(estimatedTotalAmount.indexOf("-") >= 0) {
+						split = estimatedTotalAmount.split("-");
+						estimatedTotalAmount = split[1];
+					}
+					
+					log.debug("estimatedTotalAmount", estimatedTotalAmount);
+					
+					if(linkCount == 0) {
+						log.debug("inside if ", "count 0");
+						if(isCurrentPO) {
+							log.debug('current po');
+							if(z <= i) {
+								log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
+							}
+						}
+						else {
+							amountToBeAdded = Number(estimatedTotalAmount);
+						}
+					}
+					else {
+						log.debug("inside else ", "linkCount " + linkCount);
+					}
+					_utilizedBudgetAmount = Number(_utilizedBudgetAmount) + Number(amountToBeAdded);
+					log.debug("fetchAllPRDetails _utilizedBudgetAmount", _utilizedBudgetAmount);
+				}
+			}
+
+			st = Number(ed);
 		}
+
 		return _utilizedBudgetAmount;
 	}
 	return {

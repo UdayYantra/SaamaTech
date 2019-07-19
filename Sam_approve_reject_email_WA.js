@@ -26,7 +26,7 @@ define(['N/record', 'N/encode', "N/url", "N/email"], function(record, encode, ur
     function _pendingApprovalEmailTemplate(recordObj) {
 
         var bodyString = "";
-        var requisitionTable = "";
+        var requisitionTable = _getItemAndExpenseTable(recordObj);
         var suiteletURL = url.resolveScript({scriptId: 'customscript_sam_apr_rej_sl', deploymentId: 'customdeploy_sam_apr_rej_sl', returnExternalUrl: true});
         
         var tranIdText = '', approverName = '', approverId = '', approverStatusId  = '', requestorName = '', departnmentName = '', className = '';
