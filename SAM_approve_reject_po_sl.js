@@ -40,6 +40,12 @@
             var approvalStatus = getDecodedValue(aprSts);
             var approverId = getDecodedValue(aprId);
 
+            log.debug({title: 'poId', details: poId});
+            log.debug({title: 'approverRole', details: approverRole});
+            log.debug({title: 'approvalStatus', details: approvalStatus});
+            log.debug({title: 'approverId', details: approverId});
+
+
             var recApprovalStatus = '';
 
             if(poId && approvalStatus) {
@@ -66,11 +72,17 @@
                     }
 
                     if(approverFieldText) {
+                        log.debug({title: 'approver id before', details: approverId});
+
                         recObj.setValue({fieldId: approverFieldText, value: approverId});
+
+                        log.debug({title: 'approver id after', details: approverId});
+
                     }
                     recObj.setValue({fieldId: 'custbody_sam_apr_email_flg', value: true});
 
                     recObj.save();
+                    log.debug({title: 'Save success', details: 'Save success'});
                     defaultText = '<center><font size="5" face="arial">You have approved the Purchase Order. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
                     log.debug({title: 'Approval Process', details: 'Approved'});
@@ -120,6 +132,8 @@
                 }
             }
     
+            log.debug({title: 'Finished', details: 'Finished'});
+
             context.response.writePage(form);
             
         }

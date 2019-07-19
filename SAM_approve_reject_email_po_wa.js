@@ -27,13 +27,12 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
     
     function _pendingPOApprovalEmailTemplate(recordObj) {
 
-        var bodyString = "";
         var requisitionTable = _getItemAndExpenseTable(recordObj);
         var suiteletURL = url.resolveScript({scriptId: 'customscript_sam_apr_rej_po_sl', deploymentId: 'customdeploy_sam_apr_rej_po_sl', returnExternalUrl: true});
         
         var tranIdText = '', approverRole = '', approverStatusId  = '', requestorName = '', totalAmount = '', departnmentName = '', className = '';
         
-            tranIdText = recordObj.getValue({fieldId: 'transactionnumber'});
+            tranIdText = recordObj.getValue({fieldId: 'tranid'});
             approverRole = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
             approverStatusId = recordObj.getValue({fieldId: 'custbody_sm_approval_status'});
             requestorName = recordObj.getText({fieldId: 'entity'});
@@ -55,9 +54,11 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
 
 
         log.debug({title: 'allApproverArr', details: allApproverArr});
+        if(allApproverArr.length > 0) {
+            approverIdArr = allApproverArr[0];
+            approverNameArr = allApproverArr[1];
 
-        approverIdArr = allApproverArr[0];
-        approverNameArr = allApproverArr[1];
+        }
 
         log.debug({title: 'approverIdArr', details: approverIdArr});
 
@@ -65,6 +66,7 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
 
             for(var a=0;a<approverIdArr.length;a++) {
                 
+                var bodyString = "";
                 var approverId = approverIdArr[a];
                 var approverName = approverNameArr[a];
                 log.debug({title: 'approver ID & Approver Name', details: approverId +" - & - "+ approverName});
@@ -179,27 +181,31 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
     }
 
     function _getApproverIdsByRole(approverRole) {
-        
-        var empIdsArr = [];
-        var empNameArr = [];
-        var empSerFilters = [];
-        var empSerColumns = [];
-
-        empSerFilters.push(search.createFilter({name: 'role', operator: search.Operator.ANYOF, values: approverRole}));
-        empSerColumns.push(search.createColumn({name: 'internalid'}));
-        empSerColumns.push(search.createColumn({name: 'firstname'}));
-
-        var empSearch = search.create({type: search.Type.EMPLOYEE, filters: empSerFilters, columns: empSerColumns});
-
-        if(Number(empSearch.runPaged().count) > 0) {
-            empSearch.run().each(function(result) {
-                empIdsArr.push(result.getValue({name: 'internalid'}));
-                empNameArr.push((result.getValue({name: 'firstname'}).toString()).replace(/,/g, ""));
-                return true;
-            });
+        var allArr = [];
+        if(approverRole) {
+            var empIdsArr = [];
+            var empNameArr = [];
+            var empSerFilters = [];
+            var empSerColumns = [];
+    
+            empSerFilters.push(search.createFilter({name: 'role', operator: search.Operator.ANYOF, values: approverRole}));
+            empSerColumns.push(search.createColumn({name: 'internalid'}));
+            empSerColumns.push(search.createColumn({name: 'firstname'}));
+    
+            var empSearch = search.create({type: search.Type.EMPLOYEE, filters: empSerFilters, columns: empSerColumns});
+            log.debug({title: 'employee search length', details: empSearch.runPaged().count});
+            if(Number(empSearch.runPaged().count) > 0) {
+                empSearch.run().each(function(result) {
+                    empIdsArr.push(result.getValue({name: 'internalid'}));
+                    empNameArr.push((result.getValue({name: 'firstname'}).toString()).replace(/,/g, ""));
+                    return true;
+                });
+            }
+    
+            allArr =  [empIdsArr, empNameArr];
         }
 
-        return  [empIdsArr, empNameArr];
+        return allArr;
 
     }
 
