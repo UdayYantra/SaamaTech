@@ -332,7 +332,7 @@ function(record, error, search, runtime) {
 		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
 		
 		var searchResultCount = transactionimportSearchObj.runPaged().count;
-		
+		log.debug({title: ' PO searchResultCount', details: searchResultCount});
 		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
 		
 		var ed = 0;
@@ -346,7 +346,7 @@ function(record, error, search, runtime) {
 			var billSearchResultSet = '';
 			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
 
-			var _utilizedBudgetAmount = Number(0);
+			//var _utilizedBudgetAmount = Number(0);
 			var amountToBeAdded = Number(0);
 
 			if(transactionResult) {
@@ -417,7 +417,7 @@ function(record, error, search, runtime) {
 				
 				st = Number(ed);
 			}
-		
+			log.debug({title: 'PO _utilizedBudgetAmount', details: _utilizedBudgetAmount});
 		}
 		return _utilizedBudgetAmount;
 
@@ -445,6 +445,7 @@ function(record, error, search, runtime) {
 		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
 		filterTransaction.push(search.createFilter({ name : 'item', operator : search.Operator.ANYOF, values : itemId }));
 		filterTransaction.push(search.createFilter({ name : 'approvalstatus', operator : search.Operator.NONEOF, values : '3' }));
+		filterTransaction.push(search.createFilter({ name : 'purchaseorder', operator : search.Operator.ANYOF, values : '@NONE@' }));
 		
 		var columnTransaction = new Array();
 
@@ -456,6 +457,8 @@ function(record, error, search, runtime) {
 
 		var searchResultCount = transactionimportSearchObj.runPaged().count;
 		
+		log.debug({title: ' PR searchResultCount', details: searchResultCount});
+
 		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
 
 		var ed = 0;
@@ -519,7 +522,7 @@ function(record, error, search, runtime) {
 
 			st = Number(ed);
 		}
-
+		log.debug({title: 'PR _utilizedBudgetAmount', details: _utilizedBudgetAmount});
 		return _utilizedBudgetAmount;
 	}
 	return {
