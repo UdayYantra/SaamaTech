@@ -227,11 +227,13 @@ function(record, error, search, runtime) {
 		var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 		var period = months[date.getMonth()];
 		period += " " +date.getFullYear();
-		
+
+		log.debug({title: 'period', details: period});
+
 		var accountingperiodSearchObj = search.create({ type: "accountingperiod", filters: [["periodname","contains", period]], columns: [search.createColumn({name: "parent", label: "Parent"})]});
 		var searchResultCount = accountingperiodSearchObj.runPaged().count;
 		
-		accountingperiodSearchObj.run().each(function(result){
+		accountingperiodSearchObj.run().each(function(result) {
 			
 			var parentId = result.getValue({ name: 'parent' });
 			
@@ -239,7 +241,7 @@ function(record, error, search, runtime) {
             var yearId = accountingperiodParent.getValue({ fieldId: 'parent' });
 			yearRecId = yearId;
 			
-		   return true;
+		   //return true;
 		});
 		return yearRecId;
 	}
@@ -263,6 +265,12 @@ function(record, error, search, runtime) {
 		
 		var yearRecordId = identifyYear();
 		
+		log.debug({title: 'itemExpAccID', details: itemExpAccID});
+		log.debug({title: 'yearRecordId', details: yearRecordId});
+		log.debug({title: 'subsidiary', details: subsidiary});
+		log.debug({title: 'department', details: department});
+		log.debug({title: 'getclass', details: getclass});
+
 		var filterBudget = new Array();
 		filterBudget.push(search.createFilter({ name : 'account', operator : search.Operator.ANYOF, values : itemExpAccID }));
 		filterBudget.push(search.createFilter({ name : 'year', operator : search.Operator.IS, values : yearRecordId }));
@@ -297,6 +305,7 @@ function(record, error, search, runtime) {
 		  _actualBudgetAmount = budgetResult[0].getValue({ name: 'amount' });
 		  
 		}
+		log.debug({title: '_actualBudgetAmount', details: _actualBudgetAmount})
 		return _actualBudgetAmount;
 	}
 	
