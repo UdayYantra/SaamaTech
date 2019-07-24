@@ -30,10 +30,12 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
         var requisitionTable = _getItemAndExpenseTable(recordObj);
         var suiteletURL = url.resolveScript({scriptId: 'customscript_sam_apr_rej_po_sl', deploymentId: 'customdeploy_sam_apr_rej_po_sl', returnExternalUrl: true});
         
-        var tranIdText = '', approverRole = '', approverStatusId  = '', requestorName = '', totalAmount = '', departnmentName = '', className = '';
+        var tranIdText = '', nextApproverId = '', nextApproverNm = '', approverRole = '', approverStatusId  = '', requestorName = '', totalAmount = '', departnmentName = '', className = '';
         
             tranIdText = recordObj.getValue({fieldId: 'tranid'});
-            approverRole = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
+            nextApproverId = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
+            nextApproverNm = recordObj.getText({fieldId: 'custbody_sm_next_approver_role'});
+            //approverRole = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
             approverStatusId = recordObj.getValue({fieldId: 'custbody_sm_approval_status'});
             requestorName = recordObj.getText({fieldId: 'entity'});
             totalAmount = recordObj.getValue({fieldId: 'total'});
@@ -47,10 +49,10 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
         var emailSubject = "PO #"+tranIdText + " has been submitted for your approval.";
         
         var allApproverArr = [];
-        var approverIdArr = [];
-        var approverNameArr = [];
+        var approverIdArr = [nextApproverId];
+        var approverNameArr = [nextApproverNm];
 
-        allApproverArr = _getApproverIdsByRole(approverRole);
+        /*allApproverArr = _getApproverIdsByRole(approverRole);
 
 
         log.debug({title: 'allApproverArr', details: allApproverArr});
@@ -58,7 +60,7 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
             approverIdArr = allApproverArr[0];
             approverNameArr = allApproverArr[1];
 
-        }
+        }*/
 
         log.debug({title: 'approverIdArr', details: approverIdArr});
 
@@ -76,8 +78,8 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
                     userName = approverName;
                 }
 
-                var approveURLParam = suiteletURL + '&processFlag=a&recId='+getEncodedValue(recordObj.id)+'&aprol='+getEncodedValue(approverRole)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
-                var rejectURLParam = suiteletURL + '&processFlag=r&recId='+getEncodedValue(recordObj.id)+'&aprol='+getEncodedValue(approverRole)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
+                var approveURLParam = suiteletURL + '&processFlag=a&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
+                var rejectURLParam = suiteletURL + '&processFlag=r&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
 
                 bodyString += " <html>";
                 bodyString += "     <body>";
@@ -101,8 +103,8 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
 
                 bodyString += "         <br/><br/>";
 
-                bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=16030&c=4879077_SB1&h=96a3cf9a7b52344b900a' border='0' alt='Accept' style='width: 60px;'/></a>";
-                bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=16029&c=4879077_SB1&h=e05cf731ab1ecfb3cdbc' border='0' alt='Reject' style='width: 60px;'/></a>";
+                bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27642&c=1047008_SB1&h=c973045d97f452871806' border='0' alt='Accept' style='width: 60px;'/></a>";
+                bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27643&c=1047008_SB1&h=5b07dc4058a53661c171' border='0' alt='Reject' style='width: 60px;'/></a>";
                 bodyString += "         <br/><br/>Thank you<br/>Admin";
                 bodyString += "     </body>";
                 bodyString += " </html>";
