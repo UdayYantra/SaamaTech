@@ -78,8 +78,8 @@ define(['N/record', 'N/encode', "N/url", "N/email"], function(record, encode, ur
 
             bodyString += "         <br/><br/>";
 
-            bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=16030&c=4879077_SB1&h=96a3cf9a7b52344b900a' border='0' alt='Accept' style='width: 60px;'/></a>";
-            bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=16029&c=4879077_SB1&h=e05cf731ab1ecfb3cdbc' border='0' alt='Reject' style='width: 60px;'/></a>";
+            bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27642&c=1047008_SB1&h=c973045d97f452871806' border='0' alt='Accept' style='width: 60px;'/></a>";
+            bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27643&c=1047008_SB1&h=5b07dc4058a53661c171' border='0' alt='Reject' style='width: 60px;'/></a>";
             bodyString += "         <br/><br/>Thank you<br/>Admin";
             bodyString += "     </body>";
             bodyString += " </html>";

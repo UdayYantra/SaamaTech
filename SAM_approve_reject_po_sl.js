@@ -23,11 +23,10 @@
             
             var processFlag = requestObj.parameters['processFlag'];
             var recId = requestObj.parameters['recId'];
-            var aprRol = requestObj.parameters['aprol'];
             var aprSts = requestObj.parameters['sts'];
             var aprId = requestObj.parameters['aprid'];
 
-            if(!recId || !aprRol || !aprSts || !aprId) {
+            if(!recId || !aprSts || !aprId) {
                 throw error.create({name: "MISSING PARAMETERS", message: "You are missing required parameters to proceed. Please contact your administrator for more details."});
             }
             var form = ui.createForm({title: ' ', hideNavBar: true});
@@ -36,15 +35,12 @@
                         
     
             var poId = getDecodedValue(recId);
-            var approverRole = getDecodedValue(aprRol);
             var approvalStatus = getDecodedValue(aprSts);
             var approverId = getDecodedValue(aprId);
 
             log.debug({title: 'poId', details: poId});
-            log.debug({title: 'approverRole', details: approverRole});
             log.debug({title: 'approvalStatus', details: approvalStatus});
             log.debug({title: 'approverId', details: approverId});
-
 
             var recApprovalStatus = '';
 
