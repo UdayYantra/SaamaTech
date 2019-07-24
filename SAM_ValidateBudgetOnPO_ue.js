@@ -65,6 +65,15 @@ function(record, error, search, runtime) {
 				}				
 			}
 		}
+		
+		if(subsidiary) {
+			var subCalender = '';
+			var subFieldLookUp = search.lookupFields({ type: search.Type.SUBSIDIARY, id: subsidiary, columns: ['fiscalcalendar']});
+			log.debug({title: 'subFieldLookUp', details: subFieldLookUp});
+			if(subFieldLookUp.fiscalcalendar.length > 0) {
+				subCalender = subFieldLookUp.fiscalcalendar[0].value;
+			}
+		}
 
 		var itemsArray = new Array();
 		var accountArray = new Array();
@@ -132,12 +141,12 @@ function(record, error, search, runtime) {
 			if(recType === 'purchaseorder') {
 				itemTotal+=taxamt;
 			}
-			setLineItemBudgetValues(itemId, subsidiary, department, getclass, _total, i, recordObj, itemTotal, utilizedCurrentBudget, assetacc, expenseaccount);
+			setLineItemBudgetValues(itemId, subsidiary, department, getclass, _total, i, recordObj, itemTotal, utilizedCurrentBudget, assetacc, expenseaccount, subCalender);
 		}
 		
 	}
 	
-	function setLineItemBudgetValues(itemId, subsidiary , department, getclass, _total, i, recordObj, itemTotal, utilizedCurrentBudget, assetacc, expenseaccount){
+	function setLineItemBudgetValues(itemId, subsidiary , department, getclass, _total, i, recordObj, itemTotal, utilizedCurrentBudget, assetacc, expenseaccount, subCalender){
 		
 		var recordId = recordObj.getValue({ fieldId: 'id' });
         
@@ -149,7 +158,7 @@ function(record, error, search, runtime) {
 		var intitalUtilizedBudget = fetchIntitalUtilizedBudget(itemId, subsidiary , department, getclass, assetacc);
 		totalUtilizedBudget += Number(intitalUtilizedBudget);
 
-		var _actualBudgetAmount = fetchActualBudgetAmount(itemId, subsidiary , department, getclass, assetacc);
+		var _actualBudgetAmount = fetchActualBudgetAmount(itemId, subsidiary , department, getclass, assetacc, subCalender);
 		var _remainingBudgetAmount = Number(_actualBudgetAmount) - Number(totalUtilizedBudget);
 		_remainingBudgetAmount = Number(_remainingBudgetAmount);
 		
@@ -221,7 +230,7 @@ function(record, error, search, runtime) {
 		
 	}
 	
-	function identifyYear() {
+	function identifyYear(subCalender) {
 		var yearRecId = '';
 		var date = new Date();
 		var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -230,7 +239,7 @@ function(record, error, search, runtime) {
 
 		log.debug({title: 'period', details: period});
 
-		var accountingperiodSearchObj = search.create({ type: "accountingperiod", filters: [["periodname","contains", period]], columns: [search.createColumn({name: "parent", label: "Parent"})]});
+		var accountingperiodSearchObj = search.create({ type: "accountingperiod", filters: [["periodname","contains", period], "AND", ["fiscalcalendar", search.Operator.ANYOF, subCalender]], columns: [search.createColumn({name: "parent", label: "Parent"})]});
 		var searchResultCount = accountingperiodSearchObj.runPaged().count;
 		
 		accountingperiodSearchObj.run().each(function(result) {
@@ -241,12 +250,12 @@ function(record, error, search, runtime) {
             var yearId = accountingperiodParent.getValue({ fieldId: 'parent' });
 			yearRecId = yearId;
 			
-		   //return true;
+		   return true;
 		});
 		return yearRecId;
 	}
 	
-	function fetchActualBudgetAmount(itemId, subsidiary , department, getclass, assetacc) {
+	function fetchActualBudgetAmount(itemId, subsidiary , department, getclass, assetacc, subCalender) {
 		var itemExpAcct = '';
 		if(assetacc) {
 			itemExpAcct = search.lookupFields({ type: 'item', id: itemId, columns: 'assetaccount' });
@@ -263,7 +272,7 @@ function(record, error, search, runtime) {
           	itemExpAccID = itemExpAcct.expenseaccount[0].value;
         }
 		
-		var yearRecordId = identifyYear();
+		var yearRecordId = identifyYear(subCalender);
 		
 		log.debug({title: 'itemExpAccID', details: itemExpAccID});
 		log.debug({title: 'yearRecordId', details: yearRecordId});
