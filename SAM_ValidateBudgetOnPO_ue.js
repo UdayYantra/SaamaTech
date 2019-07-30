@@ -19,7 +19,7 @@ function(record, error, search, runtime) {
         }
 		var rec = context.newRecord;
 		var recType = rec.type;
-      	
+		
 		var recId = rec.id;
 		var recordObj = record.load({ type: recType, id: recId, isDynamic: true });
 		var subsidiary = recordObj.getValue({ fieldId: 'subsidiary' });
@@ -153,18 +153,29 @@ function(record, error, search, runtime) {
 		var utilizedPRBudget = fetchAllPRDetails(itemId, subsidiary , department, getclass, recordId, i, assetacc, expenseaccount);
 		var utilizedPOBudget = fetchAllPODetails(itemId, subsidiary , department, getclass, utilizedPRBudget, recordId, i, assetacc, expenseaccount);
 		
+		log.debug({title: 'utilizedPOBudget', details: utilizedPOBudget});
+		log.debug({title: 'utilizedCurrentBudget', details: utilizedCurrentBudget});
+
 		var totalUtilizedBudget = Number(utilizedPOBudget) + Number(utilizedCurrentBudget);
 		
+		log.debug({title: 'totalUtilizedBudget', details: totalUtilizedBudget});
+
 		var intitalUtilizedBudget = fetchIntitalUtilizedBudget(itemId, subsidiary , department, getclass, assetacc);
 		totalUtilizedBudget += Number(intitalUtilizedBudget);
+
+		log.debug({title: 'intitalUtilizedBudget', details: intitalUtilizedBudget});
 
 		var _actualBudgetAmount = fetchActualBudgetAmount(itemId, subsidiary , department, getclass, assetacc, subCalender);
 		var _remainingBudgetAmount = Number(_actualBudgetAmount) - Number(totalUtilizedBudget);
 		_remainingBudgetAmount = Number(_remainingBudgetAmount);
 		
+		log.debug({title: '_remainingBudgetAmount', details: _remainingBudgetAmount});
+
 		var _afterRemainingBudget = Number(_remainingBudgetAmount) - Number(itemTotal);
 		recordObj.selectLine({ sublistId: 'item', line: i });
 		
+		log.debug({title: '_afterRemainingBudget', details: _afterRemainingBudget});
+
 		//Actual Budget
         recordObj.setCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_sam_actual_budget', line: i, value: _actualBudgetAmount });
 
@@ -339,13 +350,13 @@ function(record, error, search, runtime) {
 			filterTransaction.push(search.createFilter({ name : 'custcol_sam_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
 		}
 		if(recordId) {
-			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.ANYOF, values : recordId }));
+			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.NONEOF, values : recordId }));
 		}
 		
 		var columnTransaction = new Array();
 		/*columnTransaction.push(search.createColumn({ name: "type", label: "Type" }));
 		columnTransaction.push(search.createColumn({ name: "internalid", label: "Id" }));*/
-		columnTransaction.push(search.createColumn({ name: "totalamount", label: "Total Amount", summary: search.Summary.SUM }));
+		columnTransaction.push(search.createColumn({ name: "fxamount", label: "Total Amount", summary: search.Summary.SUM }));
 		
 		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
 		
@@ -375,7 +386,7 @@ function(record, error, search, runtime) {
 					amountToBeAdded = Number(0);
 					//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
 					
-					var totalAmount = transactionResult[a].getValue({ name: 'amount', summary: search.Summary.SUM });
+					var totalAmount = transactionResult[a].getValue({ name: 'fxamount', summary: search.Summary.SUM });
 					amountToBeAdded = totalAmount;
 					/*var purchOrdId = transactionResult[a].getValue({ name: 'internalid' });
 
@@ -457,7 +468,7 @@ function(record, error, search, runtime) {
 			filterTransaction.push(search.createFilter({ name : 'custcol_sam_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
 		}
 		if(recordId) {
-			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.ANYOF, values : recordId }));
+			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.NONEOF, values : recordId }));
 		}
 		filterTransaction.push(search.createFilter({ name : 'type', operator : search.Operator.ANYOF, values : "PurchReq" }));
 		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
@@ -470,7 +481,7 @@ function(record, error, search, runtime) {
 		/*columnTransaction.push(search.createColumn({ name: "type", label: "Type" }));
 		columnTransaction.push(search.createColumn({ name: "total", label: "Total Amount" }));
 		columnTransaction.push(search.createColumn({ name: "internalid", label: "Id" }));*/
-		columnTransaction.push(search.createColumn({ name: "estimatedtotal", label: "Estimated Amount", summary: search.Summary.SUM}));
+		columnTransaction.push(search.createColumn({ name: "fxamount", label: "Estimated Amount", summary: search.Summary.SUM}));
 		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
 
 		var searchResultCount = transactionimportSearchObj.runPaged().count;
@@ -511,7 +522,7 @@ function(record, error, search, runtime) {
 						linkCount = pr.getLineCount({ sublistId: 'links' });
 					}*/
 					amountToBeAdded = Number(0);
-					var estimatedTotalAmount = transactionResult[a].getValue({ name: 'estimatedtotal', summary: search.Summary.SUM });
+					var estimatedTotalAmount = transactionResult[a].getValue({ name: 'fxamount', summary: search.Summary.SUM });
 					
 					var split = estimatedTotalAmount;
 					
