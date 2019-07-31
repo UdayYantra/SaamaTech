@@ -212,6 +212,14 @@ define(['N/search', 'N/runtime', 'N/task', 'N/email', 'N/task'], function(search
         if(!recipientNm) {
             recipientNm = "User";
         }
+
+        if(Number(prLength) > 1) {
+            prLength = "are" + prLength;
+        }
+        else {
+            prLength = "is" + prLength;
+        }
+
         log.debug({title: "recipient", details: recipient});
         log.debug({title: "recipientNm", details: recipientNm});
         var subjectText = "Pending PR Approval Notification: PR(s) pending for your approval."
@@ -220,7 +228,7 @@ define(['N/search', 'N/runtime', 'N/task', 'N/email', 'N/task'], function(search
             bodyString += "<body>";
             bodyString += "Dear "+recipientNm+",";
                 bodyString += "<br/><br/>";
-                bodyString += "This is to bring to your notice that there "+prLength+" PR(s) pending for your Approval from last "+daysDelay+" days.";
+                bodyString += "This is to bring to your notice that there  "+prLength+" PR(s) pending for your Approval from last "+daysDelay+" days.";
                 bodyString += "<br/><br/>";
                     bodyString += "<table border= '1' cellspacing='0' cellpadding='5'>";
                     bodyString += "<tr><th><center><b>Sr. No.</b></center></th><th><center><b>PR Number</b></center></th><th><center><b>Date</b></center></th><th><center><b>Subsidiary</b></center></th><th><center><b>Department</b></center></th><th><center><b>Location</b></center></th><th><center><b>Currency</b></center></th><th><center><b>Estimated Amount</b></center></th><th><center><b>Budgetary Status</b></center></th><th><center><b>Submitted for Approval on</b></center></th></tr>";

@@ -70,12 +70,9 @@
 
         bodyString += "Hello "+vendorName+",";
         bodyString += "<br/><br/>";
-        bodyString += "This letter is inform you that your agreement <font color=\"blue\"><b>"+agrTitle+"</b></font> with Saama Technologies will end as of "+agrEndDt+".";
         
-        bodyString += "This letter serves as a reminder that your contract <font color=\"blue\"><b>"+agrTitle+"</b></font> with us is expiring as indicated in our original";
-        bodyString += "contract bearing number XXXXX which will end on <font color=\"blue\"><b>"+agrEndDt+"</b></font>. It’s been our pleasure to work with";
-        bodyString += "you on <font color=\"blue\"><b>"+agrDescp+"</b></font>.<br/>";
-
+        bodyString += "This is a reminder that your contract <font color=\"blue\"><b>"+agrTitle+"</b></font> with us is expiring on <font color=\"blue\"><b>"+agrEndDt+"</b></font>.";
+    
         bodyString += "<br/><br/>";
         bodyString += "     <table>";
         bodyString += "         <tr><td>Agreement Title</td><td>:</td><td>"+agrTitle+"</td></tr>";
@@ -84,11 +81,10 @@
         bodyString += "         <tr><td>Agreement End Date</td><td>:</td><td>"+agrEndDt+"</td></tr>";
         bodyString += "     </table>";
         bodyString += "<br/>";
-        bodyString += "Please visit office for further details.";
+        bodyString += "Please contact our representative for further information.";
         bodyString += "<br/><br/>";
         bodyString += "Thank you<br/>";
         bodyString += "Admin.<br/>";
-        bodyString += "Saama Technologies.";
 
         email.send({
             author: 63025,
@@ -98,7 +94,7 @@
             relatedRecords: {entityId: Number(vendorId)}
         });
 
-        record.submitFields({type: 'customrecord_sam_vend_agrment', id: agrIntId, values: {custrecord_sam_ve_ntfed: true}});
+        //record.submitFields({type: 'customrecord_sam_vend_agrment', id: agrIntId, values: {custrecord_sam_ve_ntfed: true}});
     }//function _sendEmailToVendor(vendorId, vendorName, agrTitle, agrDescp, agrStrDt, agrEndDt, agrIntId)
 
     function _retriggerScheduleInUsageExcess(rescheduleFlag) {

@@ -2,7 +2,7 @@
  * @NApiVersion 2.x
  * @NScriptType WorkflowActionScript
  * @NModuleScope SameAccount
- * File Name: SAM_approve_reject_email_vb_wa.js
+ * File Name: SAM_approve_reject_email_bill_wa.js
  * Script Name: SAM_ApproveRejectEmail_Bill_WA
  * Company: Saama Tech. 
  * Date	Created:	30-July-2019.
