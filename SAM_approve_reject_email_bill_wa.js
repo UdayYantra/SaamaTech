@@ -28,16 +28,17 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
     function _pendingBillApprovalEmailTemplate(recordObj) {
 
         var requisitionTable = _getItemAndExpenseTable(recordObj);
-        var suiteletURL = url.resolveScript({scriptId: 'customscript_sam_apr_rej_po_sl', deploymentId: 'customdeploy_sam_apr_rej_po_sl', returnExternalUrl: true});
+        var suiteletURL = url.resolveScript({scriptId: 'customscript_sam_apr_rej_bill_sl', deploymentId: 'customdeploy_sam_apr_rej_bill_sl', returnExternalUrl: true});
         
-        var tranIdText = '', nextApproverId = '', nextApproverNm = '', approverRole = '', approverStatusId  = '', requestorName = '', totalAmount = '', departnmentName = '', className = '';
+        var tranIdText = '', nextApproverId = '', billDate = '', nextApproverNm = '', approverRole = '', approverStatusId  = '', vendorName = '', totalAmount = '', departnmentName = '', className = '';
         
-            tranIdText = recordObj.getValue({fieldId: 'tranid'});
+            tranIdText = recordObj.getValue({fieldId: 'transactionnumber'});
             nextApproverId = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
             nextApproverNm = recordObj.getText({fieldId: 'custbody_sm_next_approver_role'});
+            billDate = recordObj.getText({fieldId: 'trandate'});
             //approverRole = recordObj.getValue({fieldId: 'custbody_sm_next_approver_role'});
-            approverStatusId = recordObj.getValue({fieldId: 'custbody_sm_approval_status'});
-            requestorName = recordObj.getText({fieldId: 'entity'});
+            approverStatusId = recordObj.getValue({fieldId: 'approvalstatus'});
+            vendorName = recordObj.getText({fieldId: 'entity'});
             totalAmount = recordObj.getValue({fieldId: 'total'});
             departnmentName = recordObj.getText({fieldId: 'department'});
             className = recordObj.getText({fieldId: 'class'});
@@ -46,80 +47,59 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
             log.debug({title: 'approverStatusId', details: approverStatusId});
             log.debug({title: 'approverRole', details: approverRole});
 
-        var emailSubject = "PO #"+tranIdText + " has been submitted for your approval.";
+        var emailSubject = "Bill #"+tranIdText + " has been submitted for your approval.";
+                      
+            var bodyString = "";
+            var approverId = nextApproverId;
+            var approverName = nextApproverNm;
+            log.debug({title: 'approver ID & Approver Name', details: approverId +" - & - "+ approverName});
+            var emailToId = approverId;
+            var userName = 'User';
+            if(approverName) {
+                userName = approverName;
+            }
+
+            var approveURLParam = suiteletURL + '&processFlag=a&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
+            var rejectURLParam = suiteletURL + '&processFlag=r&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
+
+            bodyString += " <html>";
+            bodyString += "     <body>";
+            bodyString += "         Dear "+userName+",<br/><br/>You have received a new Vendor Bill for approval.";
+            bodyString += "         <br/><br/>";
+            
+            bodyString += "         <table>";
+            bodyString += "         <tr><td>Bill Number</td><td>:</td><td>"+tranIdText+"</td></tr>";
+            bodyString += "         <tr><td>Bill Date</td><td>:</td><td>"+billDate+"</td></tr>";
+            bodyString += "         <tr><td>Vendor Name:</td><td>:</td><td>"+vendorName+"</td></tr>";
+            bodyString += "         <tr><td>Bill Amount</td><td>:</td><td>"+totalAmount+"</td></tr>";
+            bodyString += "         <tr><td>Department</td><td>:</td><td>"+departnmentName+"</td></tr>";
+            bodyString += "         <tr><td>Class</td><td>:</td><td>"+className+"</td></tr>";
+            bodyString += "         </table>";
+            bodyString += "         <br/><br/>";
+            bodyString += requisitionTable;
+
+            //bodyString += "         Attached PDF is snapshot of PR.<br/>";
+            bodyString += "         Please use below buttons to either <i><b>Approve</b></i> or <i><b>Reject</b></i> Bill.";
+            bodyString += "         <br/><br/>";
+            bodyString += "         <b>Note:</b> Upon rejection system will ask for 'Reason for Rejection'.";
+
+            bodyString += "         <br/><br/>";
+
+            bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27642&c=1047008_SB1&h=c973045d97f452871806' border='0' alt='Accept' style='width: 60px;'/></a>";
+            bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27643&c=1047008_SB1&h=5b07dc4058a53661c171' border='0' alt='Reject' style='width: 60px;'/></a>";
+            bodyString += "         <br/><br/>Thank you<br/>Admin";
+            bodyString += "     </body>";
+            bodyString += " </html>";
+            
+            var emailObj = email.send({
+                author: 63025,
+                recipients: emailToId,
+                subject: emailSubject,
+                body: bodyString,
+                relatedRecords: {transactionId: Number(recordObj.id)}
+            });
+
         
-        var allApproverArr = [];
-        var approverIdArr = [nextApproverId];
-        var approverNameArr = [nextApproverNm];
-
-        /*allApproverArr = _getApproverIdsByRole(approverRole);
-
-
-        log.debug({title: 'allApproverArr', details: allApproverArr});
-        if(allApproverArr.length > 0) {
-            approverIdArr = allApproverArr[0];
-            approverNameArr = allApproverArr[1];
-
-        }*/
-
-        log.debug({title: 'approverIdArr', details: approverIdArr});
-
-        if(approverIdArr.length > 0) {
-
-            for(var a=0;a<approverIdArr.length;a++) {
-                
-                var bodyString = "";
-                var approverId = approverIdArr[a];
-                var approverName = approverNameArr[a];
-                log.debug({title: 'approver ID & Approver Name', details: approverId +" - & - "+ approverName});
-                var emailToId = approverId;
-                var userName = 'User';
-                if(approverName) {
-                    userName = approverName;
-                }
-
-                var approveURLParam = suiteletURL + '&processFlag=a&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
-                var rejectURLParam = suiteletURL + '&processFlag=r&recId='+getEncodedValue(recordObj.id)+'&sts='+getEncodedValue(approverStatusId)+'&aprid='+getEncodedValue(approverId);
-
-                bodyString += " <html>";
-                bodyString += "     <body>";
-                bodyString += "         Dear "+userName+",<br/><br/>You have received a new Purchase Order for approval.";
-                bodyString += "         <br/><br/>";
-                
-                bodyString += "         <table>";
-                bodyString += "         <tr><td>PO Number</td><td>:</td><td>"+tranIdText+"</td></tr>";
-                bodyString += "         <tr><td>Requester</td><td>:</td><td>"+requestorName+"</td></tr>";
-                bodyString += "         <tr><td>Total Amount</td><td>:</td><td>"+totalAmount+"</td></tr>";
-                bodyString += "         <tr><td>Department</td><td>:</td><td>"+departnmentName+"</td></tr>";
-                bodyString += "         <tr><td>Class</td><td>:</td><td>"+className+"</td></tr>";
-                bodyString += "         </table>";
-                bodyString += "         <br/><br/>";
-                bodyString += requisitionTable;
-
-                //bodyString += "         Attached PDF is snapshot of PR.<br/>";
-                bodyString += "         Please use below buttons to either <i><b>Approve</b></i> or <i><b>Reject</b></i> PO.";
-                bodyString += "         <br/><br/>";
-                bodyString += "         <b>Note:</b> Upon rejection system will ask for 'Reason for Rejection'.";
-
-                bodyString += "         <br/><br/>";
-
-                bodyString += "         <a href='"+approveURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27642&c=1047008_SB1&h=c973045d97f452871806' border='0' alt='Accept' style='width: 60px;'/></a>";
-                bodyString += "         <a href='"+rejectURLParam+"'><img src='http://shopping.na0.netsuite.com/core/media/media.nl?id=27643&c=1047008_SB1&h=5b07dc4058a53661c171' border='0' alt='Reject' style='width: 60px;'/></a>";
-                bodyString += "         <br/><br/>Thank you<br/>Admin";
-                bodyString += "     </body>";
-                bodyString += " </html>";
-                
-                var emailObj = email.send({
-                    author: 63025,
-                    recipients: emailToId,
-                    subject: emailSubject,
-                    body: bodyString,
-                    relatedRecords: {transactionId: Number(recordObj.id)}
-                });
-
-            }//for(var a=0;a<approverId.length;a++)
-
-        }
         
     }
 
