@@ -49,23 +49,27 @@
                 recApprovalStatus = recObj.getValue({fieldId: 'approvalstatus'});
             }
     
+            log.debug({title: 'recApprovalStatus & approvalStatus', details: recApprovalStatus +" & "+ approvalStatus});
+
             if(recApprovalStatus && processFlag == "a") {
                 if(Number(recApprovalStatus) == Number(approvalStatus)) {
                     
-                    recObj.setValue({fieldId: 'approvalstatus', value: 2});
+                    //recObj.setValue({fieldId: 'approvalstatus', value: 2});
+                    recObj.setValue({fieldId: 'custbody_sam_apr_email_flg', value: true});
+                    recObj.setValue({fieldId: 'custbody_sam_rej_email_flg', value: false});
                     recObj.save();
                     log.debug({title: 'Save success', details: 'Save success'});
                     defaultText = '<center><font size="5" face="arial">You have approved the Vendor Bill. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
                     log.debug({title: 'Approval Process', details: 'Approved'});
                 }
-                else if(Number(recApprovalStatus) == Number(2)) {
+                else if(Number(recApprovalStatus) == Number(3)) {
                     //already rejected
                     defaultText = '<center><font size="5" face="arial">This Vendor Bill is already rejected. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
                     log.debug({title: 'Approval Process', details: 'Already Rejected'});
                 }
-                else {
+                else if(Number(recApprovalStatus) == Number(2)) {
                     //already approved
                     defaultText = '<center><font size="5" face="arial">This Vendor Bill is already approved. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
@@ -90,13 +94,13 @@
                     form.addSubmitButton({label: 'Confirm Reject'});
 
                 }
-                else if(Number(recApprovalStatus) == Number(2)) {
+                else if(Number(recApprovalStatus) == Number(3)) {
                     //already rejected
                     defaultText = '<center><font size="5" face="arial">This Vendor Bill is already rejected. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
                     log.debug({title: 'Rejection Process', details: 'Already Rejected'});
                 }
-                else {
+                else if(Number(recApprovalStatus) == Number(2)){
                     //already approved
                     defaultText = '<center><font size="5" face="arial">This Vendor Bill is already approved. Thank you.</font></center>';
                     msgFld.defaultValue = defaultText;
@@ -120,14 +124,9 @@
 
             if(recId && rejText) {
                 var recObj = record.load({type: 'vendorbill', id: recId});
-                var recApprovalStatus = recObj.getValue({fieldId: 'approvalstatus'});
-                var approverFieldText = '';
                 
-                    
-                if(approverFieldText) {
-                    recObj.setValue({fieldId: 'approvalstatus', value: 3});
-                }
-                
+                recObj.setValue({fieldId: 'custbody_sam_apr_email_flg', value: false});
+                recObj.setValue({fieldId: 'custbody_sam_rej_email_flg', value: true});
                 recObj.setValue({fieldId: 'custbody_sam_rejection_reason', value: rejText});                
                 recObj.save();
 

@@ -93,6 +93,8 @@ function(recObj, https, email, search, runtime, url, encode, ui){
 		if(userName === '' || userName == null) {
 			userName = 'User';
 		}
+		log.debug({title: 'approveImageLink', details: approveImageLink});
+		log.debug({title: 'rejectImageLink', details: rejectImageLink});
 		var companyname = record.getValue("companyname");
 		var datecreated = record.getValue("datecreated");
 		var subsidiary = record.getText("subsidiary");
