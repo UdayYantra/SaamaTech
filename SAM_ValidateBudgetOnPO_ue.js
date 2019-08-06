@@ -388,58 +388,7 @@ function(record, error, search, runtime) {
 					
 					var totalAmount = transactionResult[a].getValue({ name: 'fxamount', summary: search.Summary.SUM });
 					amountToBeAdded = totalAmount;
-					/*var purchOrdId = transactionResult[a].getValue({ name: 'internalid' });
-
-					if(poArray.indexOf(purchOrdId) != -1) {
-						continue;
-					}
-					poArray.push(purchOrdId);
 					
-					var purOrdRecord = record.load({ type: "purchaseorder", id: purchOrdId, isDynamic: true });
-					var lineItemCount = purOrdRecord.getLineCount({ sublistId: 'item' });
-					var isCurrentPO = false;
-					if(recordId == purchOrdId) {
-						isCurrentPO = true;
-					}
-					var amountTotalAdded = Number(0);
-					var account = assetacc ? assetacc : expenseaccount;
-					for (var i = 0; i < lineItemCount; i++) {
-						
-						var purchOrditemId = purOrdRecord.getSublistValue({ sublistId: "item", fieldId: "item", line: i });
-						var lineassetacc = purOrdRecord.getSublistValue({ sublistId: "item", fieldId: "custcol_sam_assetacc", line: i });
-						var lineexpenseaccount = purOrdRecord.getSublistValue({ sublistId: "item", fieldId: "custcol_sam_expenseaccount", line: i });
-						
-						var currentLineAccount = lineassetacc ? lineassetacc : lineexpenseaccount;
-
-						if(purchOrditemId == itemId) {
-							var amount = purOrdRecord.getSublistValue({ sublistId: "item", fieldId: "amount", line: i });
-							
-							if(isCurrentPO) { 
-								if(z <= i) {
-									log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
-								}
-							} 
-							else {
-								amountTotalAdded = amount;
-							}
-							amountToBeAdded += Number(amountTotalAdded);
-						} 
-						else if (currentLineAccount == account) {
-							
-							var amount = purOrdRecord.getSublistValue({ sublistId: "item", fieldId: "amount", line: i });
-							
-							if(isCurrentPO) {
-								if(z <= i) {
-									log.debug('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<', 'if');
-								}
-							}
-							else {
-								amountTotalAdded = amount;
-							}
-							amountToBeAdded += Number(amountTotalAdded);
-						}
-						
-					}*/
 					
 					_utilizedBudgetAmount = Number(_utilizedBudgetAmount) + Number(amountToBeAdded);
 				}
