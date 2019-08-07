@@ -152,11 +152,15 @@ function(record, error, search, runtime) {
         
 		var utilizedPRBudget = fetchAllPRDetails(itemId, subsidiary , department, getclass, recordId, i, assetacc, expenseaccount);
 		var utilizedPOBudget = fetchAllPODetails(itemId, subsidiary , department, getclass, utilizedPRBudget, recordId, i, assetacc, expenseaccount);
-		
+		var utilizedVBBudget = fetchAllVBDetails(itemId, subsidiary , department, getclass, utilizedPOBudget, i, assetacc, expenseaccount);
+		var utilizedBCBudget = fetchAllBCDetails(itemId, subsidiary , department, getclass, utilizedVBBudget, i, assetacc, expenseaccount);
+
 		log.debug({title: 'utilizedPOBudget', details: utilizedPOBudget});
+		log.debug({title: 'utilizedVBBudget', details: utilizedVBBudget});
+		log.debug({title: 'utilizedBCBudget', details: utilizedBCBudget});
 		log.debug({title: 'utilizedCurrentBudget', details: utilizedCurrentBudget});
 
-		var totalUtilizedBudget = Number(utilizedPOBudget) + Number(utilizedCurrentBudget);
+		var totalUtilizedBudget = Number(utilizedVBBudget) + Number(utilizedCurrentBudget);
 		
 		log.debug({title: 'totalUtilizedBudget', details: totalUtilizedBudget});
 
@@ -329,6 +333,143 @@ function(record, error, search, runtime) {
 		return _actualBudgetAmount;
 	}
 	
+	function fetchAllBCDetails(itemId, subsidiary , department, getclass, utilizedVBBudget, i, assetacc, expenseaccount) {
+
+		var filterTransaction = new Array();
+    	filterTransaction.push(search.createFilter({ name : 'subsidiary', operator : search.Operator.ANYOF, values : subsidiary }));
+		filterTransaction.push(search.createFilter({ name : 'type', operator : search.Operator.ANYOF, values : "VendCred" }));
+		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
+		filterTransaction.push(search.createFilter({ name : 'approvalstatus', join: 'createdfrom', operator : search.Operator.NONEOF, values : '3' }));
+		filterTransaction.push(search.createFilter({ name : 'createdfrom', join: 'createdfrom', operator : search.Operator.ANYOF, values : "@NONE@" }));
+		filterTransaction.push(search.createFilter({ name : 'createdfrom', operator : search.Operator.NONEOF, values : "@NONE@" }));
+
+		if(department) {
+		    filterTransaction.push(search.createFilter({ name : 'department', operator : search.Operator.IS, values : department })); 
+		}
+		if(getclass) {
+			filterTransaction.push(search.createFilter({ name : 'class', operator : search.Operator.IS, values : getclass }));
+		}
+		if(assetacc) {
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_assetacc', operator : search.Operator.ANYOF, values : assetacc }));
+		}
+		if(expenseaccount) {
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
+		}
+		
+		var columnTransaction = new Array();
+		/*columnTransaction.push(search.createColumn({ name: "type", label: "Type" }));
+		columnTransaction.push(search.createColumn({ name: "internalid", label: "Id" }));*/
+		columnTransaction.push(search.createColumn({ name: "fxamount", label: "Total Amount", summary: search.Summary.SUM }));
+		
+		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
+		
+		var searchResultCount = transactionimportSearchObj.runPaged().count;
+		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
+		
+		var ed = 0;
+		
+		for(var st=ed;st<searchResultCount;st++) {
+			ed = st+999;
+			if(searchResultCount < ed) {
+				ed = Number(searchResultCount);
+			}
+			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
+
+			//var _utilizedBudgetAmount = Number(0);
+			var amountToBeAdded = Number(0);
+
+			if(transactionResult) {
+				var poArray = new Array();
+				for(var a = 0; a < transactionResult.length; a++) {
+					
+					//var type = transactionResult[a].getValue({ name: 'type' });
+					amountToBeAdded = Number(0);
+					//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
+					
+					var totalAmount = transactionResult[a].getValue({ name: 'fxamount', summary: search.Summary.SUM });
+					amountToBeAdded = totalAmount;
+					
+					
+					utilizedVBBudget = Number(utilizedVBBudget) + Number(amountToBeAdded);
+				}
+				
+				st = Number(ed);
+			}
+			log.debug({title: 'BC utilizedVBBudget', details: utilizedVBBudget});
+		}
+
+		return utilizedVBBudget;
+
+	}
+
+	function fetchAllVBDetails(itemId, subsidiary , department, getclass, utilizedPOBudget, i, assetacc, expenseaccount) {
+		
+		var filterTransaction = new Array();
+    	filterTransaction.push(search.createFilter({ name : 'subsidiary', operator : search.Operator.ANYOF, values : subsidiary }));
+		filterTransaction.push(search.createFilter({ name : 'type', operator : search.Operator.ANYOF, values : "VendBill" }));
+		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
+		filterTransaction.push(search.createFilter({ name : 'approvalstatus', operator : search.Operator.NONEOF, values : '3' }));
+		filterTransaction.push(search.createFilter({ name : 'createdfrom', operator : search.Operator.ANYOF, values : "@NONE@" }));
+
+		if(department) {
+		    filterTransaction.push(search.createFilter({ name : 'department', operator : search.Operator.IS, values : department })); 
+		}
+		if(getclass) {
+			filterTransaction.push(search.createFilter({ name : 'class', operator : search.Operator.IS, values : getclass }));
+		}
+		if(assetacc) {
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_assetacc', operator : search.Operator.ANYOF, values : assetacc }));
+		}
+		if(expenseaccount) {
+			filterTransaction.push(search.createFilter({ name : 'custcol_sam_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
+		}
+		
+		var columnTransaction = new Array();
+		/*columnTransaction.push(search.createColumn({ name: "type", label: "Type" }));
+		columnTransaction.push(search.createColumn({ name: "internalid", label: "Id" }));*/
+		columnTransaction.push(search.createColumn({ name: "fxamount", label: "Total Amount", summary: search.Summary.SUM }));
+		
+		var transactionimportSearchObj = search.create({ type: "transaction", filters: filterTransaction, columns: columnTransaction });
+		
+		var searchResultCount = transactionimportSearchObj.runPaged().count;
+		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
+		
+		var ed = 0;
+		
+		for(var st=ed;st<searchResultCount;st++) {
+			ed = st+999;
+			if(searchResultCount < ed) {
+				ed = Number(searchResultCount);
+			}
+			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
+
+			//var _utilizedBudgetAmount = Number(0);
+			var amountToBeAdded = Number(0);
+
+			if(transactionResult) {
+				var poArray = new Array();
+				for(var a = 0; a < transactionResult.length; a++) {
+					
+					//var type = transactionResult[a].getValue({ name: 'type' });
+					amountToBeAdded = Number(0);
+					//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
+					
+					var totalAmount = transactionResult[a].getValue({ name: 'fxamount', summary: search.Summary.SUM });
+					amountToBeAdded = totalAmount;
+					
+					
+					utilizedPOBudget = Number(utilizedPOBudget) + Number(amountToBeAdded);
+				}
+				
+				st = Number(ed);
+			}
+			log.debug({title: 'PO utilizedPOBudget', details: utilizedPOBudget});
+		}
+
+		return utilizedPOBudget;
+
+	}
+
 	function fetchAllPODetails(itemId, subsidiary , department, getclass, _utilizedBudgetAmount, recordId, z, assetacc, expenseaccount) {
 		
 		var filterTransaction = new Array();
@@ -395,7 +536,7 @@ function(record, error, search, runtime) {
 				
 				st = Number(ed);
 			}
-			log.debug({title: 'PO _utilizedBudgetAmount', details: _utilizedBudgetAmount});
+			log.debug({title: 'PR _utilizedBudgetAmount', details: _utilizedBudgetAmount});
 		}
 		return _utilizedBudgetAmount;
 

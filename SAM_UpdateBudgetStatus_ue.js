@@ -61,13 +61,16 @@
             }//for(var i=0;i<itemLineCount;i++) 
 
             if(outOfBudget) {
-                recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 2});
+                recordObj.setValue({fieldId: 'custbody_sam_act_budgetary_status', value: 2});
+                if(!recordObj.getValue({fieldId: 'custbody_sam_budgetary_status'})) { recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 2}); }
             }
             else if(Number(budgetNotDefined) == Number(itemLineCount)) {
-                recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 3});
+                recordObj.setValue({fieldId: 'custbody_sam_act_budgetary_status', value: 3});
+                if(!recordObj.getValue({fieldId: 'custbody_sam_budgetary_status'})) { recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 3}); }
             }
             else if(Number(withinBudget) > 0) {
-                recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 1});
+                recordObj.setValue({fieldId: 'custbody_sam_act_budgetary_status', value: 1});
+                if(!recordObj.getValue({fieldId: 'custbody_sam_budgetary_status'})) { recordObj.setValue({fieldId: 'custbody_sam_budgetary_status', value: 1}); }
             }
 
         }//if(Number(itemLineCount) > 0)
