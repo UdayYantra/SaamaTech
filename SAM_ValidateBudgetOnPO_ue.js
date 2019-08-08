@@ -160,7 +160,7 @@ function(record, error, search, runtime) {
 		log.debug({title: 'utilizedBCBudget', details: utilizedBCBudget});
 		log.debug({title: 'utilizedCurrentBudget', details: utilizedCurrentBudget});
 
-		var totalUtilizedBudget = Number(utilizedVBBudget) + Number(utilizedCurrentBudget);
+		var totalUtilizedBudget = Number(utilizedBCBudget) + Number(utilizedCurrentBudget);
 		
 		log.debug({title: 'totalUtilizedBudget', details: totalUtilizedBudget});
 
@@ -377,7 +377,7 @@ function(record, error, search, runtime) {
 
 			//var _utilizedBudgetAmount = Number(0);
 			var amountToBeAdded = Number(0);
-
+			
 			if(transactionResult) {
 				var poArray = new Array();
 				for(var a = 0; a < transactionResult.length; a++) {
