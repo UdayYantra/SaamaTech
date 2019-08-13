@@ -37,15 +37,15 @@
         if(recObj) {
 
             var prApprovalMatrix    = recObj.getValue({fieldId: 'custbody_po_approval_matrix'});
-            var subsidiaryId        = recObj.getValue({fieldId: 'subsidiary'});
+            var departmentId        = recObj.getValue({fieldId: 'department'});
     
             //log.debug({title: 'prApprovalMatrix', details: prApprovalMatrix});
             //log.debug({title: 'subsidiaryId', details: subsidiaryId});
 
-            if(!prApprovalMatrix && subsidiaryId) {
+            if(!prApprovalMatrix && departmentId) {
                 var filterArr = [];
                 var columnArr = [];
-                filterArr.push(search.createFilter({name: 'custrecord_sm_subsidiary', operator: search.Operator.ANYOF, values: subsidiaryId}));
+                filterArr.push(search.createFilter({name: 'custrecord_sm_department', operator: search.Operator.ANYOF, values: departmentId}));
                 columnArr.push(search.createColumn({name: 'internalid'}));
                 var poMatrixSearchRes = search.create({type: 'customrecord_po_approval_matrix', filters: filterArr, columns: columnArr})
                 if(Number(poMatrixSearchRes.runPaged().count) > 0) {

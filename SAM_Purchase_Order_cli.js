@@ -16,13 +16,13 @@ define(['N/search'], function(search) {
         var currRecObj = context.currentRecord;
 
         var poApprovalMatrix = currRecObj.getValue({fieldId: 'custbody_po_approval_matrix'});
-        var subsidiaryId = currRecObj.getValue({fieldId: 'subsidiary'});
+        var departmentId = currRecObj.getValue({fieldId: 'department'});
 
-        if(!poApprovalMatrix && subsidiaryId) {
+        if(!poApprovalMatrix && departmentId) {
 
             var filterArr = [];
             var columnArr = [];
-            filterArr.push(search.createFilter({name: 'custrecord_sm_subsidiary', operator: search.Operator.ANYOF, values: subsidiaryId}));
+            filterArr.push(search.createFilter({name: 'custrecord_sm_department', operator: search.Operator.ANYOF, values: departmentId}));
             columnArr.push(search.createColumn({name: 'internalid'}));
             var poMatrixSearchRes = search.create({type: 'customrecord_po_approval_matrix', filters: filterArr, columns: columnArr})
             if(Number(poMatrixSearchRes.runPaged().count) > 0) {
@@ -32,7 +32,7 @@ define(['N/search'], function(search) {
                 });
             }
             else {
-                alert('\'PO Approval Matrix\' is not defined for this subsidiary. Please contact your supervisor for more details.');
+                alert('\'PO Approval Matrix\' is not defined for selected department. Please contact your supervisor for more details.');
                 return false;
             }   
         }
