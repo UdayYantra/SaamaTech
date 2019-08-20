@@ -85,7 +85,7 @@ define(['N/record', 'N/encode', "N/url", "N/email"], function(record, encode, ur
             bodyString += " </html>";
             
             var emailObj = email.send({
-                author: 63025,
+                author: 63039,
                 recipients: emailToId,
                 subject: emailSubject,
                 body: bodyString

@@ -240,8 +240,8 @@ define(['N/search', 'N/runtime', 'N/task', 'N/email', 'N/task'], function(search
         bodyString += "</html>";
 
         email.send({
-            author: 63025,
-            recipients: 63025,
+            author: 63039,
+            recipients: recipient,
             subject:  subjectText,
             body: bodyString
         });

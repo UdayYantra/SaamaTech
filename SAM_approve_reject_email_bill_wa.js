@@ -92,7 +92,7 @@ define(['N/record', 'N/url', 'N/email', 'N/search', 'N/encode'], function(record
             bodyString += " </html>";
             
             var emailObj = email.send({
-                author: 63025,
+                author: 63039,
                 recipients: emailToId,
                 subject: emailSubject,
                 body: bodyString,
