@@ -18,7 +18,7 @@ define(['N/search'], function(search) {
         var poApprovalMatrix = currRecObj.getValue({fieldId: 'custbody_po_approval_matrix'});
         var departmentId = currRecObj.getValue({fieldId: 'department'});
 
-        if(!poApprovalMatrix && departmentId) {
+        if(departmentId) {
 
             var filterArr = [];
             var columnArr = [];

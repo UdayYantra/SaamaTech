@@ -27,7 +27,7 @@
             var aprId = requestObj.parameters['aprid'];
             var aprSts = requestObj.parameters['aprsts'];
 
-            if(!recId || !recType || !aprId || !aprSts) {
+            if(!recId || !recType || !aprSts) {
                 throw error.create({name: "MISSING PARAMETERS", message: "You are missing required parameters to proceed. Please contact your administrator for more details."});
             }
 
@@ -58,6 +58,7 @@
             if(recApprovalStatus && processFlag == "a") {
                 if(Number(recApprovalStatus) == Number(approvalStatus)) {
                     
+                    recObj.setValue({fieldId: 'custitem_sam_item_approver', value: approverId});
                     recObj.setValue({fieldId: 'custitem_sam_item_approval_status', value: 2});
                     recObj.setValue({fieldId: 'isinactive', value: false});
                     recObj.save();
@@ -133,6 +134,7 @@
             if(recId && rejText) {
                 var recObj = record.load({type: recType, id: recId});
                 
+                recObj.setValue({fieldId: 'custitem_sam_item_approver', value: approverId});
                 recObj.setValue({fieldId: 'custitem_sam_item_approval_status', value: 3});
                 recObj.setValue({fieldId: 'custitem_sam_item_rej_reason', value: rejText});                
                 recObj.save();
