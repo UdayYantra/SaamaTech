@@ -16,8 +16,16 @@
 
         var currentRecObj = context.currentRecord;
         var doNotChangeVendor = currentRecObj.getValue({fieldId: 'custbody_do_not_change_vendor'});
+        var selectLowestQuote = currentRecObj.getValue({fieldId: 'custbody_sam_select_lowest_quote'});
+        var reasonNotLowQuote = currentRecObj.getValue({fieldId: 'custbody_sam_resn_not_sel_low_qout'});
         var awardLineCount = currentRecObj.getLineCount({sublistId: 'award'});
         var isAwardSelected = false;
+
+        if(Number(selectLowestQuote) == 2 && !reasonNotLowQuote) {
+            alert('Please enter the reason for not selecting lowest quotation.');
+            return false;
+        }
+
         if(Number(awardLineCount) > 0) {
             for(var i=0;i<awardLineCount;i++) {
                 var awardSelect = currentRecObj.getSublistValue({sublistId: 'award', fieldId: 'awarded', line: i});

@@ -20,6 +20,30 @@
 
  define(['N/record', 'N/search'], function(record, search) {
 
+    function beforeSubmit(context) {
+
+        var recObj = context.newRecord;
+
+        var itemLineCount = recObj.getLineCount({sublistId: 'item'});
+        
+
+        if(Number(itemLineCount) > 0) {
+            for(var i=0;i<itemLineCount;i++) {
+                var contractId = recObj.getSublistValue({sublistId: 'item', fieldId: 'purchasecontract', line: i});
+                var reasonString = recObj.getSublistValue({sublistId: 'item', fieldId: 'custcol_sam_resn_not_sel_low_qout', line: i});
+
+                if(!reasonString && contractId) {
+                    var contractRecObj = search.lookupFields({type: 'purchasecontract', id: contractId, columns: ['custbody_sam_resn_not_sel_low_qout']});
+                    //log.debug({title: 'contractRecObj', details: contractRecObj});
+                    if(contractRecObj.custbody_sam_resn_not_sel_low_qout) {
+                        recObj.setSublistValue({sublistId: 'item', fieldId: 'custcol_sam_resn_not_sel_low_qout', line: i, value: contractRecObj.custbody_sam_resn_not_sel_low_qout})
+                    }
+                }
+            }
+        }
+
+    }
+
     function afterSubmitFun(context) {
 
         if(context.type == context.UserEventType.DELETE) {
@@ -58,12 +82,10 @@
             recObj.save();
         }
 
-        
-
-
     }
 
     return {
+        beforeSubmit: beforeSubmit,
         afterSubmit: afterSubmitFun
     }
  });
