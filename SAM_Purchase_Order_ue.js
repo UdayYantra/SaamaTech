@@ -26,15 +26,15 @@
 
         var itemLineCount = recObj.getLineCount({sublistId: 'item'});
         
-        log.debug({title: 'itemLineCount', details: itemLineCount})
+        //log.debug({title: 'itemLineCount', details: itemLineCount})
 
         if(Number(itemLineCount) > 0) {
             for(var i=0;i<itemLineCount;i++) {
                 var contractId = recObj.getSublistValue({sublistId: 'item', fieldId: 'purchasecontract', line: i});
                 var reasonString = recObj.getSublistValue({sublistId: 'item', fieldId: 'custcol_sam_resn_not_sel_low_qout', line: i});
 
-                log.debug({title: 'contractId', details: contractId});
-                log.debug({title: 'reasonString', details: reasonString});
+                //log.debug({title: 'contractId', details: contractId});
+                //log.debug({title: 'reasonString', details: reasonString});
 
                 if(!reasonString && contractId) {
                     
@@ -48,14 +48,14 @@
                     
                     var contractSeaObj = search.create({type: 'purchasecontract', filters: serFiltersArr, columns: serColumnsArr});
 
-                    log.debug({title: 'contractSeaObj', details: contractSeaObj.runPaged().count});
+                    //log.debug({title: 'contractSeaObj', details: contractSeaObj.runPaged().count});
                     if(Number(contractSeaObj.runPaged().count) > 0) {
                         contractSeaObj.run().each(function(result) {
                             reasonString = result.getValue({name: 'custbody_sam_resn_not_sel_low_qout', join: 'createdfrom'})
                         });
                     }
 
-                    log.debug({title: 'reasonString', details: reasonString});
+                    //log.debug({title: 'reasonString', details: reasonString});
                     if(reasonString) {
                         recObj.setSublistValue({sublistId: 'item', fieldId: 'custcol_sam_resn_not_sel_low_qout', line: i, value: reasonString});
                     }
