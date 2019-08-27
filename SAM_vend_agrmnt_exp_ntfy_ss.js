@@ -63,6 +63,7 @@
         var userName        = "Vendor";
         var subjectString   = "Agreement Expiry Notification.";
         var bodyString      = "";
+        var ccArr           = ["india.procurement@saama.com"];
 
         if(vendorName) {
             userName = vendorName;
@@ -89,6 +90,7 @@
         email.send({
             author: 63039,
             recipients: vendorId,
+            cc: ccArr,
             subject: subjectString,
             body: bodyString,
             relatedRecords: {entityId: Number(vendorId)}
